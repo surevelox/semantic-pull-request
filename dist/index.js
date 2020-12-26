@@ -5868,6 +5868,7 @@ function run() {
             }
             else {
                 core.setOutput('success', false);
+                core.setFailed(validationCheck.message);
             }
         }
     });

@@ -26,6 +26,7 @@ async function run() {
             core.setOutput('success', true);
         } else {
             core.setOutput('success', false);
+            core.setFailed(validationCheck.message);
         }
     }
 }
