@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "package": "ncc build src/index.ts --source-map --license licenses.txt -e @actions/github -e @actions/core"
+    "package": "ncc build src/index.ts --source-map --license licenses.txt"
   },
   "repository": {
     "type": "git",
