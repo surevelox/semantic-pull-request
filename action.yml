@@ -1,0 +1,8 @@
+name: "semantic pull request"
+description: "Validate Title and Body of Pull Request for conventional commit"
+branding:
+  icon: "git-commit"
+  color: "green"
+runs:
+  using: "node12"
+  main: "./dist/index.js"

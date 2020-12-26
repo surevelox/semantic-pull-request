@@ -1,0 +1,35 @@
+{
+  "name": "semantic-pull-request",
+  "version": "1.0.0",
+  "description": "GitHub Action to validate Title and Description of Pull Request to match Conventional Commits spec.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "package": "ncc build src/index.ts --source-map --license licenses.txt -e @actions/github -e @actions/core"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surevelox/semantic-pull-request.git"
+  },
+  "keywords": [
+    "Github",
+    "Action",
+    "semantic",
+    "conventional",
+    "commit"
+  ],
+  "author": "Niraj Soni",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/surevelox/semantic-pull-request/issues"
+  },
+  "homepage": "https://github.com/surevelox/semantic-pull-request#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.14",
+    "typescript": "^4.1.3"
+  }
+}
