@@ -7,8 +7,8 @@ describe('Validate Default Regex', function () {
     const successMessage = 'Title and Body Validated';
 
     beforeEach(() => {
-        titleRegEx = '^(.+)(?:(([^)s]+)))?: (.+)'
-        bodyRegEx = '(.*\n)+(.*)';
+        titleRegEx = '^(.+)(?:(([^)s]+)))?: (.+)';
+        bodyRegEx = '((.|\n)+)';
     });
 
     it('feat commit Validation Result should return values for all properties', function () {
