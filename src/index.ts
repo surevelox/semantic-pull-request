@@ -8,7 +8,7 @@ async function run() {
 
     const options: ActionInput = {
         titleRegex: '^(.+)(?:(([^)s]+)))?: (.+)',
-        bodyRegex: '(.*\n)+(.*)'        
+        bodyRegex: '((.|\n)+)'
     };
 
     const pullRequest : any = github.context.payload.pull_request;

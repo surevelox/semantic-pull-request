@@ -5857,7 +5857,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const options = {
             titleRegex: '^(.+)(?:(([^)s]+)))?: (.+)',
-            bodyRegex: '(.*\n)+(.*)'
+            bodyRegex: '((.|\n)+)'
         };
         const pullRequest = github.context.payload.pull_request;
         if (pullRequest != null) {
