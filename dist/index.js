@@ -5786,8 +5786,12 @@ class PullRequestValidator {
     validate() {
         const titleRegex = new RegExp(this.titleRegex);
         const bodyRegex = new RegExp(this.bodyRegex);
+        console.log('validating title: ' + this.title);
         const match = titleRegex.test(this.title);
+        console.log('validated title:' + match);
+        console.log('validating body: ' + this.body);
         const matchBody = bodyRegex.test(this.body);
+        console.log('validated body: ' + matchBody);
         if (!match) {
             return {
                 status: 'fail',
@@ -5864,6 +5868,7 @@ function run() {
             }
             else {
                 core.setOutput('success', false);
+                core.setFailed(validationCheck.message);
             }
         }
     });

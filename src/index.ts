@@ -11,7 +11,7 @@ async function run() {
         bodyRegex: '((.|\n)+)'
     };
 
-    const pullRequest = github.context.payload.pull_request;
+    const pullRequest : any = github.context.payload.pull_request;
 
     if (pullRequest != null) {
         const validationCheck: ValidationResult = new PullRequestValidator(
@@ -26,6 +26,7 @@ async function run() {
             core.setOutput('success', true);
         } else {
             core.setOutput('success', false);
+            core.setFailed(validationCheck.message);
         }
     }
 }
