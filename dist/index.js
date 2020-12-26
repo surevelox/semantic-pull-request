@@ -5856,6 +5856,8 @@ function run() {
             bodyRegex: '(.*\n)+(.*)'
         };
         const pullRequest = github.context.payload.pull_request;
+        console.log(pullRequest.title);
+        console.log(pullRequest.body);
         if (pullRequest != null) {
             const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_a = pullRequest.body) !== null && _a !== void 0 ? _a : '', options.titleRegex, options.bodyRegex).validate();
             // if validation is success then update the status

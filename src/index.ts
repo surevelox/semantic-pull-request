@@ -11,7 +11,10 @@ async function run() {
         bodyRegex: '(.*\n)+(.*)'        
     };
 
-    const pullRequest = github.context.payload.pull_request;
+    const pullRequest : any = github.context.payload.pull_request;
+
+    console.log(pullRequest.title);
+    console.log(pullRequest.body);
 
     if (pullRequest != null) {
         const validationCheck: ValidationResult = new PullRequestValidator(
