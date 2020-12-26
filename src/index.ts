@@ -13,9 +13,6 @@ async function run() {
 
     const pullRequest : any = github.context.payload.pull_request;
 
-    console.log(pullRequest.title);
-    console.log(pullRequest.body);
-
     if (pullRequest != null) {
         const validationCheck: ValidationResult = new PullRequestValidator(
             pullRequest.title,

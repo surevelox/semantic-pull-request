@@ -5786,8 +5786,12 @@ class PullRequestValidator {
     validate() {
         const titleRegex = new RegExp(this.titleRegex);
         const bodyRegex = new RegExp(this.bodyRegex);
+        console.log('validating title: ' + this.title);
         const match = titleRegex.test(this.title);
+        console.log('validated title:' + match);
+        console.log('validating body: ' + this.body);
         const matchBody = bodyRegex.test(this.body);
+        console.log('validated body: ' + matchBody);
         if (!match) {
             return {
                 status: 'fail',
@@ -5856,8 +5860,6 @@ function run() {
             bodyRegex: '(.*\n)+(.*)'
         };
         const pullRequest = github.context.payload.pull_request;
-        console.log(pullRequest.title);
-        console.log(pullRequest.body);
         if (pullRequest != null) {
             const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_a = pullRequest.body) !== null && _a !== void 0 ? _a : '', options.titleRegex, options.bodyRegex).validate();
             // if validation is success then update the status
