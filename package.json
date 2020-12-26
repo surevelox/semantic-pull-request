@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "build:package": "ncc build src/index.ts --source-map --license licenses.txt",
-    "build:all" : "npm run build && npm run package && npm run test",
+    "package": "ncc build src/index.ts --source-map --license licenses.txt",
     "test": "jest",
     "coverage": "jest --coverage",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 -v"

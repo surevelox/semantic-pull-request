@@ -14,7 +14,7 @@ describe('Validate Default Regex', function () {
     it('feat commit Validation Result should return values for all properties', function () {
         const pr = new PullRequestValidator(
             'feat(tabs): Issue #1',
-            'optional body\n',
+            'optional body',
             titleRegEx,
             bodyRegEx
         );
