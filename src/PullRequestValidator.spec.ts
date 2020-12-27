@@ -21,11 +21,9 @@ describe('Validate Default Regex', function () {
 
         const result = pr.validate();
 
-        expect(result.status).toBe('success');       
+        expect(result.status).toBe('success');
         expect(result.message).toBe(successMessage);
     });
-
-    
 
     it('Invalid message should FAIL', function () {
         const pr = new PullRequestValidator(
@@ -38,7 +36,6 @@ describe('Validate Default Regex', function () {
         const result = pr.validate();
         expect(result.status).toBe('fail');
     });
-
 
     it('Missing PR Body should FAIL', function () {
         const pr = new PullRequestValidator(

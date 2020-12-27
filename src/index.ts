@@ -5,13 +5,12 @@ import { PullRequestValidator } from './PullRequestValidator';
 import { ValidationResult } from './ValidationResult';
 
 async function run() {
-
     const options: ActionInput = {
         titleRegex: '^(.+)(?:(([^)s]+)))?: (.+)',
-        bodyRegex: '((.|\n)+)'
+        bodyRegex: '((.|\n)+)',
     };
 
-    const pullRequest : any = github.context.payload.pull_request;
+    const pullRequest: any = github.context.payload.pull_request;
 
     if (pullRequest != null) {
         const validationCheck: ValidationResult = new PullRequestValidator(
