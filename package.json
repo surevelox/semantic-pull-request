@@ -4,6 +4,7 @@
   "description": "GitHub Action to validate Title and Description of Pull Request to match Conventional Commits spec.",
   "main": "dist/index.js",
   "scripts": {
+    "cz:commit": "cz",
     "build": "tsc",
     "build:package": "ncc build src/index.ts --source-map --license licenses.txt",
     "build:all": "npm run build && npm run format && npm run lint && npm run build:package && npm run test",
@@ -50,6 +51,11 @@
     "eslint-plugin-prettier": "^3.3.0",
     "prettier": "^2.2.1",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
-    "@typescript-eslint/parser": "^4.10.0"
+    "@typescript-eslint/parser": "^4.10.0",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "commitizen": "^4.2.2",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^4.3.6"
   }
 }
