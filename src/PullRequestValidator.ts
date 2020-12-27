@@ -1,4 +1,4 @@
-import { ValidationResult } from "./ValidationResult";
+import { ValidationResult } from './ValidationResult';
 
 export class PullRequestValidator {
     constructor(
@@ -37,6 +37,5 @@ export class PullRequestValidator {
             status: 'success',
             message: 'Title and Body Validated',
         } as any;
-
     }
 }

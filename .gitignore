@@ -80,6 +80,12 @@ typings/
 
 # Nuxt.js build / generate output
 .nuxt
+dist/*
+!dist/index.js
+!dist/index.map.js
+!dist/licenses.txt
+!dist/sourcemap-register.js
+
 
 # Gatsby files
 .cache/
