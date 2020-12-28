@@ -12,8 +12,9 @@ export class PullRequestValidator {
         const bodyRegex = new RegExp(this.bodyRegex);
 
         console.log('validating title: ' + this.title);
-        const match = titleRegex.test(this.title);
-        console.log('validated title:' + match);
+        const match = titleRegex.exec(this.title);
+        console.log('validated title:');
+        console.log(match);
 
         console.log('validating body: ' + this.body);
         const matchBody = bodyRegex.test(this.body);
@@ -33,9 +34,16 @@ export class PullRequestValidator {
             } as any;
         }
 
+        const type = match![1];
+        const scope = match![2];
+        const subject = match![3];
+
         return {
             status: 'success',
             message: 'Title and Body Validated',
+            type: type,
+            scope: scope,
+            subject: subject,
         } as any;
     }
 }
