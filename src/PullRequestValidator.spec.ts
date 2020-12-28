@@ -7,7 +7,7 @@ describe('Validate Default Regex', function () {
     const successMessage = 'Title and Body Validated';
 
     beforeEach(() => {
-        titleRegEx = '^(.+)(?:(([^)s]+)))?: (.+)';
+        titleRegEx = '^(.+?)(?:[(](.+)[)])?!?: (.+)';
         bodyRegEx = '((.|\n)+)';
     });
 
@@ -22,7 +22,67 @@ describe('Validate Default Regex', function () {
         const result = pr.validate();
 
         expect(result.status).toBe('success');
+        expect(result.type).toBe('feat');
+        expect(result.scope).toBe('tabs');
+        expect(result.subject).toBe('Issue #1');
         expect(result.message).toBe(successMessage);
+    });
+
+    it('breaking changes commit Validation Result  should return values for all properties', function () {
+        const pr = new PullRequestValidator(
+            'fix(tabs)!: Issue #1',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('success');
+        expect(result.type).toBe('fix');
+        expect(result.scope).toBe('tabs');
+        expect(result.subject).toBe('Issue #1');
+        expect(result.message).toBe(successMessage);
+    });
+
+    it('revert commit Validation Result should return values for all properties', function () {
+        const pr = new PullRequestValidator(
+            'revert: fix(tabs): Issue #1',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('success');
+        expect(result.subject).toBe('fix(tabs): Issue #1');
+        expect(result.message).toBe(successMessage);
+    });
+
+    it('revert commit Breaking changes Validation Result  should return values for all properties', function () {
+        const pr = new PullRequestValidator(
+            'revert!: fix(tabs): Issue #1',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+
+        expect(result.status).toBe('success');
+        expect(result.subject).toBe('fix(tabs): Issue #1');
+        expect(result.message).toBe(successMessage);
+    });
+
+    it('revert commit without commit message should fail', function () {
+        const pr = new PullRequestValidator(
+            'revert:',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('fail');
     });
 
     it('Invalid message should FAIL', function () {
