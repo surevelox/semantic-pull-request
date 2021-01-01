@@ -5787,9 +5787,8 @@ class PullRequestValidator {
         const titleRegex = new RegExp(this.titleRegex);
         const bodyRegex = new RegExp(this.bodyRegex);
         console.log('validating title: ' + this.title);
-        const match = titleRegex.exec(this.title);
-        console.log('validated title:');
-        console.log(match);
+        const match = titleRegex.test(this.title);
+        console.log('validated title:' + match);
         console.log('validating body: ' + this.body);
         const matchBody = bodyRegex.test(this.body);
         console.log('validated body: ' + matchBody);
@@ -5805,15 +5804,9 @@ class PullRequestValidator {
                 message: 'Body failed',
             };
         }
-        const type = match[1];
-        const scope = match[2];
-        const subject = match[3];
         return {
             status: 'success',
             message: 'Title and Body Validated',
-            type: type,
-            scope: scope,
-            subject: subject,
         };
     }
 }
@@ -5863,7 +5856,7 @@ function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const options = {
-            titleRegex: '^(.+?)(?:[(](.+)[)])?!?: (.+)',
+            titleRegex: '^(.+)(?:(([^)s]+)))?: (.+)',
             bodyRegex: '((.|\n)+)',
         };
         const pullRequest = github.context.payload.pull_request;
