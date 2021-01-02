@@ -7,11 +7,12 @@ describe('Validate Default Regex', function () {
     const successMessage = 'Title and Body Validated';
 
     beforeEach(() => {
-        titleRegEx = '^(.+)(?:(([^)s]+)))?: (.+)';
+        titleRegEx =
+            '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$';
         bodyRegEx = '((.|\n)+)';
     });
 
-    it('feat commit Validation Result should return values for all properties', function () {
+    it('feat commit should return values for all properties', function () {
         const pr = new PullRequestValidator(
             'feat(tabs): Issue #1',
             'optional body',
@@ -22,7 +23,95 @@ describe('Validate Default Regex', function () {
         const result = pr.validate();
 
         expect(result.status).toBe('success');
+        expect(result.type).toBe('feat');
+        expect(result.scope).toBe('tabs');
+        expect(result.subject).toBe('Issue #1');
         expect(result.message).toBe(successMessage);
+    });
+
+    it('breaking changes commit should return values for all properties', function () {
+        const pr = new PullRequestValidator(
+            'fix(tabs)!: Issue #1',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('success');
+        expect(result.type).toBe('fix');
+        expect(result.scope).toBe('tabs');
+        expect(result.subject).toBe('Issue #1');
+        expect(result.message).toBe(successMessage);
+    });
+
+    it('revert commit should return values for all properties', function () {
+        const pr = new PullRequestValidator(
+            'revert: fix(tabs): Issue #1',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('success');
+        expect(result.type).toBe('revert');
+        expect(result.subject).toBe('fix(tabs): Issue #1');
+        expect(result.message).toBe(successMessage);
+    });
+
+    it('revert commit message within quote should return values for all properties', function () {
+        const pr = new PullRequestValidator(
+            'revert: "fix(tabs): Issue #1"',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('success');
+        expect(result.type).toBe('revert');
+        expect(result.subject).toBe('fix(tabs): Issue #1');
+        expect(result.message).toBe(successMessage);
+    });
+
+    it('revert commit with breaking changes should return values for all properties', function () {
+        const pr = new PullRequestValidator(
+            'revert!: fix(tabs): Issue #1',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+
+        expect(result.status).toBe('success');
+        expect(result.subject).toBe('fix(tabs): Issue #1');
+        expect(result.message).toBe(successMessage);
+    });
+
+    it('revert commit without commit message should fail', function () {
+        const pr = new PullRequestValidator(
+            'revert:',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('fail');
+    });
+
+    it('revert commit without previous commit type should fail', function () {
+        const pr = new PullRequestValidator(
+            'revert: Issue #1',
+            'optional body',
+            titleRegEx,
+            bodyRegEx
+        );
+
+        const result = pr.validate();
+        expect(result.status).toBe('fail');
     });
 
     it('Invalid message should FAIL', function () {

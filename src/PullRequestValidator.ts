@@ -12,8 +12,9 @@ export class PullRequestValidator {
         const bodyRegex = new RegExp(this.bodyRegex);
 
         console.log('validating title: ' + this.title);
-        const match = titleRegex.test(this.title);
-        console.log('validated title:' + match);
+        const match = titleRegex.exec(this.title);
+        console.log('validated title:');
+        console.log(match);
 
         console.log('validating body: ' + this.body);
         const matchBody = bodyRegex.test(this.body);
@@ -33,9 +34,25 @@ export class PullRequestValidator {
             } as any;
         }
 
+        const type =
+            match![1] !== undefined ? match![1].toLocaleLowerCase() : match![5];
+        const scope = match![6];
+        const subject = match![1] !== undefined ? match![4] : match![7];
+
+        if (type === 'revert' && match![5].toLocaleLowerCase() === 'revert') {
+            return {
+                status: 'fail',
+                message:
+                    "Revert commit must provide previous commit's type, scope and subject",
+            } as any;
+        }
+
         return {
             status: 'success',
             message: 'Title and Body Validated',
+            type: type,
+            scope: scope,
+            subject: subject,
         } as any;
     }
 }
