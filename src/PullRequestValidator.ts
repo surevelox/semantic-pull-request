@@ -34,9 +34,16 @@ export class PullRequestValidator {
             } as any;
         }
 
-        const type = match![1];
-        const scope = match![2];
-        const subject = match![3];
+        const type = match![1] !== undefined ? match![1].toLocaleLowerCase() : match![5];
+        const scope = match![6];
+        const subject = match![1] !== undefined ? match![4] : match![7];
+        
+        if(type === 'revert' && match![5].toLocaleLowerCase() === 'revert' ){
+            return {
+                status: 'fail',
+                message: 'Revert commit must provide previous commit\'s type, scope and subject'
+            } as any;
+        }
 
         return {
             status: 'success',
