@@ -5926,30 +5926,35 @@ const PullRequestValidator_1 = __webpack_require__(497);
 function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const options = {
-            titleRegex: '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
-            bodyRegex: '((.|\n)+)',
-            statusName: 'Semantic Pull Request',
-        };
-        let pullRequest = github.context.payload.pull_request;
-        if (pullRequest != null) {
-            const gitHelper = new GithubHelper_1.GitHubHelper(process.env.GITHUB_TOKEN);
-            // Get latest changes from PR before validating
-            pullRequest = yield gitHelper.getPullRequest();
-            const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_a = pullRequest.body) !== null && _a !== void 0 ? _a : '', options.titleRegex, options.bodyRegex).validate();
-            // if validation is success then update the status
-            if (validationCheck.status === 'success') {
-                gitHelper.updatePRStatus(options.statusName, 'success', validationCheck.message);
-                core.setOutput('success', true);
+        try {
+            const options = {
+                titleRegex: '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
+                bodyRegex: '((.|\n)+)',
+                statusName: 'Semantic Pull Request',
+            };
+            let pullRequest = github.context.payload.pull_request;
+            if (pullRequest != null) {
+                const gitHelper = new GithubHelper_1.GitHubHelper(process.env.GITHUB_TOKEN);
+                // Get latest changes from PR before validating
+                pullRequest = yield gitHelper.getPullRequest();
+                const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_a = pullRequest.body) !== null && _a !== void 0 ? _a : '', options.titleRegex, options.bodyRegex).validate();
+                // if validation is success then update the status
+                if (validationCheck.status === 'success') {
+                    gitHelper.updatePRStatus(options.statusName, 'success', validationCheck.message);
+                    core.setOutput('success', true);
+                }
+                else {
+                    gitHelper.updatePRStatus(options.statusName, 'fail', validationCheck.message);
+                    core.setOutput('success', false);
+                }
             }
             else {
-                gitHelper.updatePRStatus(options.statusName, 'fail', validationCheck.message);
                 core.setOutput('success', false);
+                core.setFailed('Unsupported event configured. The `semantic pull request`action only works with `pull_request_target` or `pull_request` events');
             }
         }
-        else {
-            core.setOutput('success', false);
-            core.setFailed('Unsupported event configured. The `semantic pull request`action only works with `pull_request_target` or `pull_request` events');
+        catch (error) {
+            core.setFailed(error.message);
         }
     });
 }
