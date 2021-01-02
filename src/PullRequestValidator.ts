@@ -43,7 +43,7 @@ export class PullRequestValidator {
             return {
                 status: 'fail',
                 message:
-                    "Revert commit must provide previous commit's type, scope and subject",
+                    'Revert commit must provide previous commit type, scope and subject',
             } as any;
         }
 
