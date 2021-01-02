@@ -6,7 +6,8 @@ import { ValidationResult } from './ValidationResult';
 
 async function run() {
     const options: ActionInput = {
-        titleRegex: '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
+        titleRegex:
+            '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
         bodyRegex: '((.|\n)+)',
     };
 

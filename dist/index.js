@@ -5805,9 +5805,15 @@ class PullRequestValidator {
                 message: 'Body failed',
             };
         }
-        const type = match[1];
-        const scope = match[2];
-        const subject = match[3];
+        const type = match[1] !== undefined ? match[1].toLocaleLowerCase() : match[5];
+        const scope = match[6];
+        const subject = match[1] !== undefined ? match[4] : match[7];
+        if (type === 'revert' && match[5].toLocaleLowerCase() === 'revert') {
+            return {
+                status: 'fail',
+                message: "Revert commit must provide previous commit's type, scope and subject",
+            };
+        }
         return {
             status: 'success',
             message: 'Title and Body Validated',
@@ -5863,7 +5869,7 @@ function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const options = {
-            titleRegex: '^(.+?)(?:[(](.+)[)])?!?: (.+)',
+            titleRegex: '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
             bodyRegex: '((.|\n)+)',
         };
         const pullRequest = github.context.payload.pull_request;

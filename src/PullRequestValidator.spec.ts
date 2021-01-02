@@ -7,7 +7,8 @@ describe('Validate Default Regex', function () {
     const successMessage = 'Title and Body Validated';
 
     beforeEach(() => {
-        titleRegEx = '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$';
+        titleRegEx =
+            '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$';
         bodyRegEx = '((.|\n)+)';
     });
 
