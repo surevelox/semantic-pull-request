@@ -5805,22 +5805,54 @@ class PullRequestValidator {
                 message: 'Body failed',
             };
         }
-        const type = match[1] !== undefined ? match[1].toLocaleLowerCase() : match[5];
+        const isRevert = match[1] !== undefined;
+        const type = isRevert ? match[1].toLocaleLowerCase() : match[5];
         const scope = match[6];
-        const subject = match[1] !== undefined ? match[4] : match[7];
-        if (type === 'revert' && match[5].toLocaleLowerCase() === 'revert') {
-            return {
+        const subject = match[1] !== undefined ? match[4] : match[8];
+        let status;
+        if (isRevert && match[5] === 'revert') {
+            status = {
                 status: 'fail',
                 message: 'Revert commit must provide previous commit type, scope and subject',
             };
         }
-        return {
-            status: 'success',
-            message: 'Title and Body Validated',
-            type: type,
-            scope: scope,
-            subject: subject,
-        };
+        else if (isRevert && match[5] === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Invalid revert commit - missing previous commit type ',
+            };
+        }
+        else if (isRevert && scope === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Missing previous commit scope in PR Title',
+            };
+        }
+        else if (type === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Missing commit type in PR Title',
+            };
+        }
+        else if (scope === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Missing commit scope in PR Title',
+            };
+        }
+        else if (subject === undefined || subject.trim() === '') {
+            status = {
+                status: 'fail',
+                message: 'Missing commit subject in PR Title',
+            };
+        }
+        else {
+            status = {
+                status: 'success',
+                message: 'Title and Body Validated',
+            };
+        }
+        return Object.assign(Object.assign({}, status), { type: type, scope: scope, subject: subject });
     }
 }
 exports.PullRequestValidator = PullRequestValidator;
@@ -5941,7 +5973,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const options = {
-                titleRegex: '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
+                titleRegex: '^(?:([R|r]evert)(!)?:? )?(")?((?:(.+?)(?:[(](.+)[)])?(!)?: )?(.+))(\\3)$',
                 bodyRegex: '((.|\n)+)',
                 statusName: 'Semantic Pull Request',
             };

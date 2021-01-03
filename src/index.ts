@@ -10,7 +10,7 @@ async function run() {
     try {
         const options: ActionInput = {
             titleRegex:
-                '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
+                '^(?:([R|r]evert)(!)?:? )?(")?((?:(.+?)(?:[(](.+)[)])?(!)?: )?(.+))(\\3)$',
             bodyRegex: '((.|\n)+)',
             statusName: 'Semantic Pull Request',
         };
