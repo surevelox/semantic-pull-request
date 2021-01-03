@@ -41,7 +41,7 @@ async function run() {
             } else {
                 gitHelper.updatePRStatus(
                     options.statusName,
-                    'fail',
+                    'failure',
                     validationCheck.message
                 );
 

@@ -5944,7 +5944,7 @@ function run() {
                     core.setOutput('success', true);
                 }
                 else {
-                    gitHelper.updatePRStatus(options.statusName, 'fail', validationCheck.message);
+                    gitHelper.updatePRStatus(options.statusName, 'failure', validationCheck.message);
                     core.setOutput('success', false);
                 }
             }
