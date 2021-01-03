@@ -5852,31 +5852,41 @@ class GitHubHelper {
     updatePRStatus(statusName, statusValue, statusMessage) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const owner = github_1.context.payload.pull_request.base.user.login;
-            const repo = github_1.context.payload.pull_request.base.repo.name;
-            const sha = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha;
-            yield this.octokit.request('POST /repos/:owner/:repo/statuses/:sha', {
-                owner,
-                repo,
-                statusValue,
-                statusMessage,
-                sha: sha,
-                target_url: 'https://github.com/surevelox/semantic-pull-request',
-                context: statusName,
-            });
+            try {
+                const owner = github_1.context.payload.pull_request.base.user.login;
+                const repo = github_1.context.payload.pull_request.base.repo.name;
+                const sha = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha;
+                yield this.octokit.request('POST /repos/:owner/:repo/statuses/:sha', {
+                    owner,
+                    repo,
+                    sha,
+                    statusValue,
+                    statusMessage,
+                    target_url: 'https://github.com/surevelox/semantic-pull-request',
+                    context: statusName,
+                });
+            }
+            catch (e) {
+                throw e;
+            }
         });
     }
     getPullRequest() {
         return __awaiter(this, void 0, void 0, function* () {
-            const owner = github_1.context.payload.pull_request.base.user.login;
-            const repo = github_1.context.payload.pull_request.base.repo.name;
-            const prNum = github_1.context.payload.pull_request.number;
-            const { data: pullRequest } = yield this.octokit.pulls.get({
-                owner,
-                repo,
-                pull_number: prNum,
-            });
-            return pullRequest;
+            try {
+                const owner = github_1.context.payload.pull_request.base.user.login;
+                const repo = github_1.context.payload.pull_request.base.repo.name;
+                const prNum = github_1.context.payload.pull_request.number;
+                const { data: pullRequest } = yield this.octokit.pulls.get({
+                    owner,
+                    repo,
+                    pull_number: prNum,
+                });
+                return pullRequest;
+            }
+            catch (e) {
+                throw e;
+            }
         });
     }
 }
