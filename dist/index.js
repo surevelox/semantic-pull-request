@@ -5849,24 +5849,26 @@ class GitHubHelper {
     constructor(token, options) {
         this.octokit = github_1.getOctokit(token, options);
     }
-    updatePRStatus(statusName, statusValue, statusMessage) {
+    updatePRStatus(statusName, state, description) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const owner = github_1.context.payload.pull_request.base.user.login;
                 const repo = github_1.context.payload.pull_request.base.repo.name;
                 const sha = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha;
-                yield this.octokit.request('POST /repos/:owner/:repo/statuses/:sha', {
-                    owner,
-                    repo,
-                    sha,
-                    statusValue,
-                    statusMessage,
+                const response = yield this.octokit.request('POST /repos/{owner}/{repo}/statuses/{sha}', {
+                    owner: owner,
+                    repo: repo,
+                    sha: sha,
+                    state: state,
+                    description: description,
                     target_url: 'https://github.com/surevelox/semantic-pull-request',
                     context: statusName,
                 });
+                return response;
             }
             catch (e) {
+                console.log(e.message);
                 throw e;
             }
         });
@@ -5885,6 +5887,7 @@ class GitHubHelper {
                 return pullRequest;
             }
             catch (e) {
+                console.log(e.message);
                 throw e;
             }
         });
@@ -5934,7 +5937,7 @@ const github = __importStar(__webpack_require__(438));
 const GithubHelper_1 = __webpack_require__(802);
 const PullRequestValidator_1 = __webpack_require__(497);
 function run() {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const options = {
@@ -5945,16 +5948,22 @@ function run() {
             let pullRequest = github.context.payload.pull_request;
             if (pullRequest != null) {
                 const gitHelper = new GithubHelper_1.GitHubHelper(process.env.GITHUB_TOKEN);
+                console.log(`Getting pull request #${(_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number}...`);
                 // Get latest changes from PR before validating
                 pullRequest = yield gitHelper.getPullRequest();
-                const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_a = pullRequest.body) !== null && _a !== void 0 ? _a : '', options.titleRegex, options.bodyRegex).validate();
+                console.log(`Received pull request #${pullRequest}`);
+                const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_b = pullRequest.body) !== null && _b !== void 0 ? _b : '', options.titleRegex, options.bodyRegex).validate();
                 // if validation is success then update the status
                 if (validationCheck.status === 'success') {
-                    gitHelper.updatePRStatus(options.statusName, 'success', validationCheck.message);
+                    console.log(`PR Validated #${validationCheck.status}, Updating Commit Status...`);
+                    const response = yield gitHelper.updatePRStatus(options.statusName, 'success', validationCheck.message);
+                    console.log(`Updated Commit Status #${validationCheck.status}, Resonse received ${response} `);
                     core.setOutput('success', true);
                 }
                 else {
-                    gitHelper.updatePRStatus(options.statusName, 'failure', validationCheck.message);
+                    console.log(`PR Validated #${validationCheck.status}, Updating Commit Status...`);
+                    const response = yield gitHelper.updatePRStatus(options.statusName, 'failure', validationCheck.message);
+                    console.log(`Updated Commit Status #${validationCheck.status}, Resonse received ${response} `);
                     core.setOutput('success', false);
                 }
             }
@@ -5964,6 +5973,7 @@ function run() {
             }
         }
         catch (error) {
+            console.log(error.message);
             core.setFailed(error.message);
         }
     });

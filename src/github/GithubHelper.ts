@@ -10,28 +10,30 @@ export class GitHubHelper {
     }
     public async updatePRStatus(
         statusName: string,
-        statusValue: string,
-        statusMessage: string
+        state: 'error' | 'failure' | 'pending' | 'success',
+        description: string
     ) {
         try {
             const owner = context.payload.pull_request!.base.user.login;
             const repo = context.payload.pull_request!.base.repo.name;
             const sha = context.payload.pull_request?.head.sha;
 
-            await this.octokit.request(
-                'POST /repos/:owner/:repo/statuses/:sha',
+            const response = await this.octokit.request(
+                'POST /repos/{owner}/{repo}/statuses/{sha}',
                 {
-                    owner,
-                    repo,
-                    sha,
-                    statusValue,
-                    statusMessage,
+                    owner: owner,
+                    repo: repo,
+                    sha: sha,
+                    state: state,
+                    description: description,
                     target_url:
                         'https://github.com/surevelox/semantic-pull-request',
                     context: statusName,
                 }
             );
+            return response;
         } catch (e) {
+            console.log(e.message);
             throw e;
         }
     }
@@ -50,6 +52,7 @@ export class GitHubHelper {
 
             return pullRequest;
         } catch (e) {
+            console.log(e.message);
             throw e;
         }
     }
