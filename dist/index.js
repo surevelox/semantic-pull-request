@@ -5805,25 +5805,127 @@ class PullRequestValidator {
                 message: 'Body failed',
             };
         }
-        const type = match[1] !== undefined ? match[1].toLocaleLowerCase() : match[5];
+        const isRevert = match[1] !== undefined;
+        const type = isRevert ? match[1].toLocaleLowerCase() : match[5];
         const scope = match[6];
-        const subject = match[1] !== undefined ? match[4] : match[7];
-        if (type === 'revert' && match[5].toLocaleLowerCase() === 'revert') {
-            return {
+        const subject = match[1] !== undefined ? match[4] : match[8];
+        let status;
+        if (isRevert && match[5] === 'revert') {
+            status = {
                 status: 'fail',
-                message: "Revert commit must provide previous commit's type, scope and subject",
+                message: 'Revert commit must provide previous commit type, scope and subject',
             };
         }
-        return {
-            status: 'success',
-            message: 'Title and Body Validated',
-            type: type,
-            scope: scope,
-            subject: subject,
-        };
+        else if (isRevert && match[5] === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Invalid revert commit - missing previous commit type ',
+            };
+        }
+        else if (isRevert && scope === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Missing previous commit scope in PR Title',
+            };
+        }
+        else if (type === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Missing commit type in PR Title',
+            };
+        }
+        else if (scope === undefined) {
+            status = {
+                status: 'fail',
+                message: 'Missing commit scope in PR Title',
+            };
+        }
+        else if (subject === undefined || subject.trim() === '') {
+            status = {
+                status: 'fail',
+                message: 'Missing commit subject in PR Title',
+            };
+        }
+        else {
+            status = {
+                status: 'success',
+                message: 'Title and Body Validated',
+            };
+        }
+        return Object.assign(Object.assign({}, status), { type: type, scope: scope, subject: subject });
     }
 }
 exports.PullRequestValidator = PullRequestValidator;
+
+
+/***/ }),
+
+/***/ 802:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GitHubHelper = void 0;
+const github_1 = __webpack_require__(438);
+class GitHubHelper {
+    constructor(token, options) {
+        this.octokit = github_1.getOctokit(token, options);
+    }
+    updatePRStatus(statusName, state, description) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const owner = github_1.context.payload.pull_request.base.user.login;
+                const repo = github_1.context.payload.pull_request.base.repo.name;
+                const sha = (_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.head.sha;
+                const response = yield this.octokit.request('POST /repos/{owner}/{repo}/statuses/{sha}', {
+                    owner: owner,
+                    repo: repo,
+                    sha: sha,
+                    state: state,
+                    description: description,
+                    target_url: 'https://github.com/surevelox/semantic-pull-request',
+                    context: statusName,
+                });
+                return response;
+            }
+            catch (e) {
+                console.log(e.message);
+                throw e;
+            }
+        });
+    }
+    getPullRequest() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const owner = github_1.context.payload.pull_request.base.user.login;
+                const repo = github_1.context.payload.pull_request.base.repo.name;
+                const prNum = github_1.context.payload.pull_request.number;
+                const { data: pullRequest } = yield this.octokit.pulls.get({
+                    owner,
+                    repo,
+                    pull_number: prNum,
+                });
+                return pullRequest;
+            }
+            catch (e) {
+                console.log(e.message);
+                throw e;
+            }
+        });
+    }
+}
+exports.GitHubHelper = GitHubHelper;
 
 
 /***/ }),
@@ -5864,25 +5966,47 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(186));
 const github = __importStar(__webpack_require__(438));
+const GithubHelper_1 = __webpack_require__(802);
 const PullRequestValidator_1 = __webpack_require__(497);
 function run() {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const options = {
-            titleRegex: '^(?:([R|r]evert)(!)?: )?(")?((.+?)(?:[(](.+)[)])?!?: (.+))(\\3)$',
-            bodyRegex: '((.|\n)+)',
-        };
-        const pullRequest = github.context.payload.pull_request;
-        if (pullRequest != null) {
-            const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_a = pullRequest.body) !== null && _a !== void 0 ? _a : '', options.titleRegex, options.bodyRegex).validate();
-            // if validation is success then update the status
-            if (validationCheck.status === 'success') {
-                core.setOutput('success', true);
+        try {
+            const options = {
+                titleRegex: '^(?:([R|r]evert)(!)?:? )?(")?((?:(.+?)(?:[(](.+)[)])?(!)?: )?(.+))(\\3)$',
+                bodyRegex: '((.|\n)+)',
+                statusName: 'Semantic Pull Request',
+            };
+            let pullRequest = github.context.payload.pull_request;
+            if (pullRequest != null) {
+                const gitHelper = new GithubHelper_1.GitHubHelper(process.env.GITHUB_TOKEN);
+                console.log(`Getting pull request #${(_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number}...`);
+                // Get latest changes from PR before validating
+                pullRequest = yield gitHelper.getPullRequest();
+                console.log(`Received pull request #${pullRequest}`);
+                const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_b = pullRequest.body) !== null && _b !== void 0 ? _b : '', options.titleRegex, options.bodyRegex).validate();
+                // if validation is success then update the status
+                if (validationCheck.status === 'success') {
+                    console.log(`PR Validated #${validationCheck.status}, Updating Commit Status...`);
+                    const response = yield gitHelper.updatePRStatus(options.statusName, 'success', validationCheck.message);
+                    console.log(`Updated Commit Status #${validationCheck.status}, Resonse received ${response} `);
+                    core.setOutput('success', true);
+                }
+                else {
+                    console.log(`PR Validated #${validationCheck.status}, Updating Commit Status...`);
+                    const response = yield gitHelper.updatePRStatus(options.statusName, 'failure', validationCheck.message);
+                    console.log(`Updated Commit Status #${validationCheck.status}, Resonse received ${response} `);
+                    core.setOutput('success', false);
+                }
             }
             else {
                 core.setOutput('success', false);
-                core.setFailed(validationCheck.message);
+                core.setFailed('Unsupported event configured. The `semantic pull request`action only works with `pull_request_target` or `pull_request` events');
             }
+        }
+        catch (error) {
+            console.log(error.message);
+            core.setFailed(error.message);
         }
     });
 }
