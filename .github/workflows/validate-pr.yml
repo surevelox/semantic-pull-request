@@ -1,25 +1,13 @@
-  
-name: 'build-test'
-on: # rebuild any PRs and main branch changes
-  pull_request:
+name: 'build'
+on: [pull_request, pull_request_target] # rebuild any PRs on main branch
     types: 
       - opened
       - reopened
       - edited
       - synchronize 
-  push:
     branches:
       - main
-
 jobs:
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: |
-          npm install
-      - run: |
-          npm run build:all
   test: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
