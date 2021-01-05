@@ -1,0 +1,26 @@
+name: "PR"
+on:
+    pull_request:
+        types: 
+          - opened
+          - reopened
+          - edited
+          - synchronize 
+        branches:
+          - main
+    pull_request_target: # rebuild any PRs on main branch
+        types: 
+          - opened
+          - reopened
+          - edited
+          - synchronize 
+        branches:
+          - main
+jobs:
+  verify: # make sure the action works on a clean machine without building
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
