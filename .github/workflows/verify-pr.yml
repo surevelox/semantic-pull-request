@@ -1,5 +1,12 @@
 on:
     pull_request:
+      types: 
+          - opened
+          - reopened
+          - edited
+          - synchronize 
+        branches:
+          - main
     pull_request_target: # rebuild any PRs on main branch
       types: 
         - opened
