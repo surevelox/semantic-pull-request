@@ -1,14 +1,13 @@
-name: 'build'
 on: [pull_request, pull_request_target] # rebuild any PRs on main branch
-    types: 
-      - opened
-      - reopened
-      - edited
-      - synchronize 
-    branches:
-      - main
+  types: 
+    - opened
+    - reopened
+    - edited
+    - synchronize 
+  branches:
+    - main
 jobs:
-  test: # make sure the action works on a clean machine without building
+  Verify PR: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
