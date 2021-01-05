@@ -1,3 +1,4 @@
+name: "Build"
 on: # rebuild any PRs and main branch changes
   push:
     branches:
