@@ -5,7 +5,9 @@ export class PullRequestValidator {
         private title: string,
         private body: string,
         private titleRegex: string,
-        private bodyRegex: string
+        private bodyRegex: string,
+        private validScopes: Array<string> = [],
+        private scopeRequired: boolean = false
     ) {}
     validate(): ValidationResult {
         const titleRegex = new RegExp(this.titleRegex);
@@ -34,10 +36,13 @@ export class PullRequestValidator {
             } as any;
         }
 
-        const isRevert = match![1] !== undefined;
+        const isRevert = match![1] != null;
         const type = isRevert ? match![1].toLocaleLowerCase() : match![5];
         const scope = match![6];
-        const subject = match![1] !== undefined ? match![4] : match![8];
+        const subject = isRevert ? match![4] : match![8];
+        const isBreakingChanges = isRevert
+            ? match![2] != null
+            : match![7] != null;
 
         let status: any;
         if (isRevert && match![5] === 'revert') {
@@ -46,28 +51,47 @@ export class PullRequestValidator {
                 message:
                     'Revert commit must provide previous commit type, scope and subject',
             };
-        } else if (isRevert && match![5] === undefined) {
+        } else if (isRevert && match![5] == null) {
             status = {
                 status: 'fail',
                 message:
                     'Invalid revert commit - missing previous commit type ',
             };
-        } else if (isRevert && scope === undefined) {
+        } else if (isRevert && scope == null && this.scopeRequired) {
             status = {
                 status: 'fail',
                 message: 'Missing previous commit scope in PR Title',
             };
-        } else if (type === undefined) {
+        } else if (
+            isRevert &&
+            scope != null &&
+            this.validScopes.length > 0 &&
+            !this.validScopes.includes(scope)
+        ) {
+            status = {
+                status: 'fail',
+                message: `Revert commit has invalid previous commit scope. Use one these scopes \`${this.validScopes.join()}\``,
+            };
+        } else if (type == null) {
             status = {
                 status: 'fail',
                 message: 'Missing commit type in PR Title',
             };
-        } else if (scope === undefined) {
+        } else if (scope == null && this.scopeRequired) {
             status = {
                 status: 'fail',
                 message: 'Missing commit scope in PR Title',
             };
-        } else if (subject === undefined || subject.trim() === '') {
+        } else if (
+            scope != null &&
+            this.validScopes.length > 0 &&
+            !this.validScopes.includes(scope)
+        ) {
+            status = {
+                status: 'fail',
+                message: `No scope found. Use one these scopes \`${this.validScopes.join()}\``,
+            };
+        } else if (subject == null || subject.trim() === '') {
             status = {
                 status: 'fail',
                 message: 'Missing commit subject in PR Title',

@@ -3,6 +3,17 @@ description: "Validate Title and Body of Pull Request for conventional commit"
 branding:
   icon: "git-commit"
   color: "green"
+inputs:
+  valid-scopes:
+    description: "List of valid scopes. Default is any scope entry is valid"
+    required: false
+    default: '' #comma separated list of scopes i.e tab, button
+  scope-required:
+    description: "Sets if scope is required in commit message. Default is optional"
+    required: false
+    default: false
+
 runs:
   using: "node12"
   main: "./dist/index.js"
+  

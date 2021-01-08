@@ -5777,11 +5777,13 @@ function wrappy (fn, cb) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PullRequestValidator = void 0;
 class PullRequestValidator {
-    constructor(title, body, titleRegex, bodyRegex) {
+    constructor(title, body, titleRegex, bodyRegex, validScopes = [], scopeRequired = false) {
         this.title = title;
         this.body = body;
         this.titleRegex = titleRegex;
         this.bodyRegex = bodyRegex;
+        this.validScopes = validScopes;
+        this.scopeRequired = scopeRequired;
     }
     validate() {
         const titleRegex = new RegExp(this.titleRegex);
@@ -5805,10 +5807,13 @@ class PullRequestValidator {
                 message: 'Body failed',
             };
         }
-        const isRevert = match[1] !== undefined;
+        const isRevert = match[1] != null;
         const type = isRevert ? match[1].toLocaleLowerCase() : match[5];
         const scope = match[6];
-        const subject = match[1] !== undefined ? match[4] : match[8];
+        const subject = isRevert ? match[4] : match[8];
+        const isBreakingChanges = isRevert
+            ? match[2] != null
+            : match[7] != null;
         let status;
         if (isRevert && match[5] === 'revert') {
             status = {
@@ -5816,31 +5821,48 @@ class PullRequestValidator {
                 message: 'Revert commit must provide previous commit type, scope and subject',
             };
         }
-        else if (isRevert && match[5] === undefined) {
+        else if (isRevert && match[5] == null) {
             status = {
                 status: 'fail',
                 message: 'Invalid revert commit - missing previous commit type ',
             };
         }
-        else if (isRevert && scope === undefined) {
+        else if (isRevert && scope == null && this.scopeRequired) {
             status = {
                 status: 'fail',
                 message: 'Missing previous commit scope in PR Title',
             };
         }
-        else if (type === undefined) {
+        else if (isRevert &&
+            scope != null &&
+            this.validScopes.length > 0 &&
+            !this.validScopes.includes(scope)) {
+            status = {
+                status: 'fail',
+                message: `Revert commit has invalid previous commit scope. Use one these scopes \`${this.validScopes.join()}\``,
+            };
+        }
+        else if (type == null) {
             status = {
                 status: 'fail',
                 message: 'Missing commit type in PR Title',
             };
         }
-        else if (scope === undefined) {
+        else if (scope == null && this.scopeRequired) {
             status = {
                 status: 'fail',
                 message: 'Missing commit scope in PR Title',
             };
         }
-        else if (subject === undefined || subject.trim() === '') {
+        else if (scope != null &&
+            this.validScopes.length > 0 &&
+            !this.validScopes.includes(scope)) {
+            status = {
+                status: 'fail',
+                message: `No scope found. Use one these scopes \`${this.validScopes.join()}\``,
+            };
+        }
+        else if (subject == null || subject.trim() === '') {
             status = {
                 status: 'fail',
                 message: 'Missing commit subject in PR Title',
@@ -5969,33 +5991,43 @@ const github = __importStar(__webpack_require__(438));
 const GithubHelper_1 = __webpack_require__(802);
 const PullRequestValidator_1 = __webpack_require__(497);
 function run() {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f, _g;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const options = {
                 titleRegex: '^(?:([R|r]evert)(!)?:? )?(")?((?:(.+?)(?:[(](.+)[)])?(!)?: )?(.+))(\\3)$',
                 bodyRegex: '((.|\n)+)',
                 statusName: 'Semantic Pull Request',
+                validScopes: [],
+                isScopeRequired: false,
             };
+            const scopelist = (_c = (_b = (_a = core
+                .getInput('valid-scopes')) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.split(',')) === null || _c === void 0 ? void 0 : _c.map((i) => i.trim());
+            if (scopelist != null && scopelist.length > 0) {
+                options.validScopes = scopelist;
+            }
+            options.isScopeRequired =
+                ((_e = (_d = core.getInput('scope-required')) === null || _d === void 0 ? void 0 : _d.trim()) === null || _e === void 0 ? void 0 : _e.toLocaleLowerCase()) ===
+                    'true';
             let pullRequest = github.context.payload.pull_request;
             if (pullRequest != null) {
                 const gitHelper = new GithubHelper_1.GitHubHelper(process.env.GITHUB_TOKEN);
-                console.log(`Getting pull request #${(_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number}...`);
+                console.log(`Getting pull request #${(_f = github.context.payload.pull_request) === null || _f === void 0 ? void 0 : _f.number}...`);
                 // Get latest changes from PR before validating
                 pullRequest = yield gitHelper.getPullRequest();
                 console.log(`Received pull request #${pullRequest}`);
-                const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_b = pullRequest.body) !== null && _b !== void 0 ? _b : '', options.titleRegex, options.bodyRegex).validate();
+                const validationCheck = new PullRequestValidator_1.PullRequestValidator(pullRequest.title, (_g = pullRequest.body) !== null && _g !== void 0 ? _g : '', options.titleRegex, options.bodyRegex).validate();
                 // if validation is success then update the status
                 if (validationCheck.status === 'success') {
                     console.log(`PR Validated #${validationCheck.status}, Updating Commit Status...`);
                     const response = yield gitHelper.updatePRStatus(options.statusName, 'success', validationCheck.message);
-                    console.log(`Updated Commit Status #${validationCheck.status}, Resonse received ${response} `);
+                    console.log(`Updated Commit Status #${validationCheck.status}, Response received ${response} `);
                     core.setOutput('success', true);
                 }
                 else {
                     console.log(`PR Validated #${validationCheck.status}, Updating Commit Status...`);
                     const response = yield gitHelper.updatePRStatus(options.statusName, 'failure', validationCheck.message);
-                    console.log(`Updated Commit Status #${validationCheck.status}, Resonse received ${response} `);
+                    console.log(`Updated Commit Status #${validationCheck.status}, Response received ${response} `);
                     core.setOutput('success', false);
                 }
             }

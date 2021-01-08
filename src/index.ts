@@ -13,7 +13,22 @@ async function run() {
                 '^(?:([R|r]evert)(!)?:? )?(")?((?:(.+?)(?:[(](.+)[)])?(!)?: )?(.+))(\\3)$',
             bodyRegex: '((.|\n)+)',
             statusName: 'Semantic Pull Request',
+            validScopes: [],
+            isScopeRequired: false,
         };
+
+        const scopelist = core
+            .getInput('valid-scopes')
+            ?.trim()
+            ?.split(',')
+            ?.map((i) => i.trim());
+        if (scopelist != null && scopelist.length > 0) {
+            options.validScopes = scopelist;
+        }
+
+        options.isScopeRequired =
+            core.getInput('scope-required')?.trim()?.toLocaleLowerCase() ===
+            'true';
 
         let pullRequest: any = github.context.payload.pull_request;
 
@@ -47,7 +62,7 @@ async function run() {
                 );
 
                 console.log(
-                    `Updated Commit Status #${validationCheck.status}, Resonse received ${response} `
+                    `Updated Commit Status #${validationCheck.status}, Response received ${response} `
                 );
 
                 core.setOutput('success', true);
@@ -63,7 +78,7 @@ async function run() {
                 );
 
                 console.log(
-                    `Updated Commit Status #${validationCheck.status}, Resonse received ${response} `
+                    `Updated Commit Status #${validationCheck.status}, Response received ${response} `
                 );
 
                 core.setOutput('success', false);
