@@ -137,4 +137,140 @@ describe('Validate Default Regex', function () {
         const result = pr.validate();
         expect(result.status).toBe('fail');
     });
+    describe('Scope is optional', function () {
+        it('Commit message without scope should return success', function () {
+            const pr = new PullRequestValidator(
+                'fix: Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                [],
+                false
+            );
+
+            const result = pr.validate();
+            console.log(result.scope);
+            expect(result.scope).toBeUndefined();
+            expect(result.status).toBe('success');
+            expect(result.message).toBe('Title and Body Validated');
+        });
+
+        it('Commit message with scope from valid list should return success', function () {
+            const pr = new PullRequestValidator(
+                'fix(column): Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                ['table', 'row', 'column'],
+                false
+            );
+
+            const result = pr.validate();
+            expect(result.scope).toBe('column');
+            expect(result.status).toBe('success');
+            expect(result.message).toBe('Title and Body Validated');
+        });
+
+        it('Commit message with scope but not from valid list should fail', function () {
+            const pr = new PullRequestValidator(
+                'fix(chair): Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                ['table', 'row', 'column'],
+                false
+            );
+
+            const result = pr.validate();
+            expect(result.scope).toBe('chair');
+            expect(result.status).toBe('fail');
+            expect(result.message).toBe(
+                'No scope found. Use one these scopes `table,row,column`'
+            );
+        });
+
+        it('Commit message without scope with valid list of scope should return success', function () {
+            const pr = new PullRequestValidator(
+                'fix: Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                ['table', 'row', 'column'],
+                false
+            );
+
+            const result = pr.validate();
+            expect(result.scope).toBeUndefined();
+            expect(result.status).toBe('success');
+            expect(result.message).toBe('Title and Body Validated');
+        });
+    });
+
+    describe('Scope is required', function () {
+        it('Commit message without scope should fail', function () {
+            const pr = new PullRequestValidator(
+                'fix: Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                [],
+                true
+            );
+
+            const result = pr.validate();
+            console.log(result.scope);
+            expect(result.scope).toBeUndefined();
+            expect(result.status).toBe('fail');
+        });
+
+        it('Commit message with scope from valid list should return success', function () {
+            const pr = new PullRequestValidator(
+                'fix(column): Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                ['table', 'row', 'column'],
+                true
+            );
+
+            const result = pr.validate();
+            expect(result.scope).toBe('column');
+            expect(result.status).toBe('success');
+            expect(result.message).toBe('Title and Body Validated');
+        });
+
+        it('Commit message with scope but not from valid list should fail', function () {
+            const pr = new PullRequestValidator(
+                'fix(chair): Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                ['table', 'row', 'column'],
+                true
+            );
+
+            const result = pr.validate();
+            expect(result.scope).toBe('chair');
+            expect(result.status).toBe('fail');
+            expect(result.message).toBe(
+                'No scope found. Use one these scopes `table,row,column`'
+            );
+        });
+
+        it('Commit message without scope with valid list of scope should fail', function () {
+            const pr = new PullRequestValidator(
+                'fix: Issue #1',
+                `fixed table issues`,
+                titleRegEx,
+                bodyRegEx,
+                ['table', 'row', 'column'],
+                true
+            );
+
+            const result = pr.validate();
+            expect(result.scope).toBeUndefined();
+            expect(result.status).toBe('fail');
+            expect(result.message).toBe('Missing commit scope in PR Title');
+        });
+    });
 });
