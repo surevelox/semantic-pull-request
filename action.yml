@@ -5,11 +5,11 @@ branding:
   color: "green"
 inputs:
   valid-scopes:
-    description: "List of valid scopes. Default is any scope entry is valid"
+    description: "Defines list of valid scopes. By default any scope entry is valid."
     required: false
     default: '' #comma separated list of scopes i.e tab, button
   scope-required:
-    description: "Sets if scope is required in commit message. Default is optional"
+    description: "Defines if scope is required in commit message. By default scope is optional and not required."
     required: false
     default: false
 
